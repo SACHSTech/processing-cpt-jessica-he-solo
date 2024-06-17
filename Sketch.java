@@ -6,6 +6,8 @@ import processing.core.PImage;
 
 public class Sketch extends PApplet {
 
+
+    // Loading in image variables 
     PImage imgBackground;
     PImage imgVanillaIceCream;
     PImage imgChocolateIceCream;
@@ -17,7 +19,10 @@ public class Sketch extends PApplet {
     PImage imgCherry;
     PImage imgOreo;
     PImage imgSprinkles;
+    PImage imgAngry;
+    PImage imgHappy;
 
+    // Setting locations to false 
     boolean inKitchen = false;
     boolean inFrontDesk = false;
     boolean customOrderGenerated = false;
@@ -37,6 +42,7 @@ public class Sketch extends PApplet {
     String[] possibleFlavors = {"Vanilla", "Chocolate", "Strawberry"};
     String[] possibleToppings = {"Cherry", "Sprinkles", "Oreo Crumbs"};
     
+    // Location of icecream flavor 
     PImage selectedFlavorImage;
     int scoopX = 0;  // X-coordinate for the flavor image
     int scoopY = 0;  // Y-coordinate for the flavor image
@@ -54,8 +60,11 @@ public class Sketch extends PApplet {
     int ellipse2Color;  // Color for second ellipse (Sprinkles)
     int ellipse3Color;  // Color for third ellipse (Cherry)
 
-    // Boolean to control displaying ice cream with toppings
+    // Boolean to control displaying ice cream with toppings to false
     boolean displayIceCreamWithToppings = false;
+
+    // Restarts icecream
+    int numRestarts;
 
     public void settings() {
         size(1400, 700);
@@ -73,12 +82,14 @@ public class Sketch extends PApplet {
         imgCherry = loadImage("Cherry.png");
         imgOreo = loadImage("Oreo.png");
         imgSprinkles = loadImage("Sprinkles.png");
+        imgAngry = loadImage("angry.png");
+        imgHappy = loadImage("happy.png");
         inStoreFront = true;
 
         // Set colors for ellipses
-        ellipse1Color = color(102, 51, 0);  // Brown color (RGB)
-        ellipse2Color = color(128, 56, 186);   // Purple color (RGB)
-        ellipse3Color = color(255, 0, 0);   // Red color (RGB)
+        ellipse1Color = color(102, 51, 0);  // oreo
+        ellipse2Color = color(128, 56, 186);   // sprinkles
+        ellipse3Color = color(255, 0, 0);   // cherry
     }
 
     public void draw() {
@@ -86,7 +97,15 @@ public class Sketch extends PApplet {
             image(imgBackground, 0, 0, width, height);
             fill(0);
             textSize(24);
-            text("Press 0 to enter store", 50, 200);
+            text("Press 0 to enter store", 50, 50);
+            text("Game Guide: ", 60, 75);
+            text("0 = enter store - generate order", 60,100);
+            text("e = enter Kitchen (select icecream flavour)", 60,125);
+            text("g = place your icecream selected into topping station)", 60,150);
+            text("t = enter Topping station (select toppings)", 60,175);
+            text("p = hand to customer, recieve feedback", 60, 200);
+            text("b = dispose icecream, restart", 60,225);
+
         } else if (showScreen == PlaySequence.FRONT_DESK) {
             image(imgFrontDesk, 0, 0, width, height);
             displayFrontDesk();
@@ -102,13 +121,13 @@ public class Sketch extends PApplet {
             displayTopping();  // Display toppings station
             // Draw all selected topping images
             for (PImage topping : selectedToppings) {
-                image(topping, 600, 350, 170, 170);  // Adjust position and size as needed
+                image(topping, 600, 350, 170, 170); 
             }
         } else if (showScreen == PlaySequence.END_RESULT) {
             displayEndResult();  // Display end result screen
         }
         
-        // Display ice cream with toppings if flag is true
+        // Display ice cream with toppings if true
         if (displayIceCreamWithToppings) {
             drawIceCreamWithToppings();
         }
@@ -130,9 +149,9 @@ public class Sketch extends PApplet {
         fill(0);
         textSize(24);
         textAlign(CENTER, CENTER);
-        text("Select ice cream flavor and toppings:", width / 2, 550);
-        text("Flavors: v (Vanilla), c (Chocolate), s (Strawberry)", width / 2, 600);
-        text("Press 't' to move onto toppings station", width / 2, 650 );
+        text("Select ice cream flavor and toppings:", 300, 550);
+        text("Flavors: v (Vanilla), c (Chocolate), s (Strawberry)", 300, 600);
+        text("Press 't' to move onto toppings station", 300, 650 );
         selectedIcecream();
     }
 
@@ -140,17 +159,19 @@ public class Sketch extends PApplet {
         fill(0);
         textSize(24);
         textAlign(CENTER, CENTER);
-        text("After completed click 'g' to serve out the icecream", width / 2, 675);
+        text("Press 'g' to reveal the icecream flavour selected", width / 2, 650);
+        text("Select the toppings by clicking the circles above", width / 2, 675);
+        text("After completed press 'p' to recieve feed back!", 1150, height / 2);
 
-        // Draw ellipse for Oreo (ellipse1)
+        // Draw ellipse for Oreo 
         fill(ellipse1Color);
         ellipse(ellipse1X, ellipseY, 60, 60);  // Oreo
 
-        // Draw ellipse for Sprinkles (ellipse2)
+        // Draw ellipse for Sprinkles
         fill(ellipse2Color);
         ellipse(ellipse2X, ellipseY, 60, 60);  // Sprinkles
 
-        // Draw ellipse for Cherry (ellipse3)
+        // Draw ellipse for Cherry 
         fill(ellipse3Color);
         ellipse(ellipse3X, ellipseY, 60, 60);  // Cherry
 
@@ -158,20 +179,19 @@ public class Sketch extends PApplet {
     }
 
     public void mousePressed() {
-        // Check if mouse is within the area of the first ellipse (Oreo)
+        // Check if mouse is within the area of the first ellipse1 (Oreo)
         if (dist(mouseX, mouseY, ellipse1X, ellipseY) < 30) {  // Adjust radius according to ellipse size
             selectedToppings.add(imgOreo);
         }
-        // Check if mouse is within the area of the second ellipse (Sprinkles)
+        // Check if mouse is within the area of the second ellipse2 (Sprinkles)
         else if (dist(mouseX, mouseY, ellipse2X, ellipseY) < 30) {  // Adjust radius according to ellipse size
             selectedToppings.add(imgSprinkles);
         }
-        // Check if mouse is within the area of the third ellipse (Cherry)
+        // Check if mouse is within the area of the third ellipse3 (Cherry)
         else if (dist(mouseX, mouseY, ellipse3X, ellipseY) < 30) {  // Adjust radius according to ellipse size
             selectedToppings.add(imgCherry);
         }
     }
-
     public void keyPressed() {
         if (key == '0') {
             generateOrder();
@@ -186,13 +206,15 @@ public class Sketch extends PApplet {
             inKitchen = false;
             inTopping = true;
         } else if (key == 'g') {
-            displayIceCreamWithToppings = true;  // Toggle flag to display ice cream with toppings
+            displayIceCreamWithToppings = true;  
         } else if (key == 'p') {
             if (checkOrderMatch()) {
                 showScreen = PlaySequence.END_RESULT;
             } else {
                 showScreen = PlaySequence.END_RESULT;
             }
+        } else if (key == 'b') {
+            restartPreparation();
         }
     }
     public void generateOrder() {
@@ -211,10 +233,10 @@ public class Sketch extends PApplet {
             do {
                 int toppingIndex = (int) random(toppings.length);
                 topping = toppings[toppingIndex];
-            } while (selectedToppings.contains(topping)); // Avoid duplicates
+            } while (selectedToppings.contains(topping)); // stop duplicates
             selectedToppings.add(topping);
             toppingsList.append(topping);
-            if (i < numToppings - 1) { // Add comma if not the last topping
+            if (i < numToppings - 1) { 
                 toppingsList.append(", ");
             }
         }
@@ -226,12 +248,7 @@ public class Sketch extends PApplet {
         }
     
         customOrderGenerated = true;
-    
-        // Check if level 2 should be unlocked
-        if (!level2Unlocked) {
-            level2Unlocked = true;
-            text("Congratulations! You may now continue to level 2 where you need to prepare 2 ice creams.", width / 2, height / 2 + 100);
-        }
+
     }
     
     public void selectedIcecream() {
@@ -263,19 +280,20 @@ public class Sketch extends PApplet {
     }
     
     public void displayEndResult() {
-        background(255);  // White background for end result
-    
+        background(255);
         // Check if the prepared ice cream matches the customer order
         if (checkOrderMatch()) {
-            fill(0, 255, 0);  // Green color for success message
+            image(imgHappy, 0, 0, width, height);
             textSize(32);
             textAlign(CENTER, CENTER);
-            text("Congratulations! You made the right order.", width / 2, height / 2);
+            text("Congratulations! You made the right order.", width / 2, 300);
+            text("Press '0' to start your new order", width / 2, height / 2);
         } else {
-            fill(255, 0, 0);  // Red color for failure message
+            image(imgAngry, 0, 0, width, height);
             textSize(32);
             textAlign(CENTER, CENTER);
-            text("The customer is angry. You get a 0 star.", width / 2, height / 2);
+            text("The customer is angry. You made the wrong order.", width / 2, 300);
+            text("Press '0' to start your new order", width / 2, height / 2);
         }
     }
     
@@ -298,13 +316,8 @@ public class Sketch extends PApplet {
         // Check if selected toppings match customer order
         HashSet<String> selectedToppingsSet = new HashSet<>();
         for (PImage topping : selectedToppings) {
-            if (topping == imgOreo) {
-                selectedToppingsSet.add("Oreo crumbs");
-            } else if (topping == imgSprinkles) {
-                selectedToppingsSet.add("Sprinkles");
-            } else if (topping == imgCherry) {
-                selectedToppingsSet.add("Cherry");
-            }
+            String toppingName = getToppingName(topping);
+            selectedToppingsSet.add(toppingName);
         }
     
         // Convert selected toppings to string
@@ -318,6 +331,25 @@ public class Sketch extends PApplet {
     
         // Check if both flavor and toppings match customer order
         return orderFlavor.equals(selectedFlavor) && orderToppings.equals(selectedToppingsStr.toString());
+    }
+    
+    // Helper method to get the name of the topping
+    private String getToppingName(PImage topping) {
+        if (topping == imgOreo) {
+            return "Oreo crumbs";
+        } else if (topping == imgSprinkles) {
+            return "Sprinkles";
+        } else if (topping == imgCherry) {
+            return "Cherry";
+        }
+        return "";  // Default case, shouldn't happen if images are correctly handled
+    }
+    
+    public void restartPreparation() {
+        selectedFlavorImage = null;
+        selectedToppings.clear();
+        displayIceCreamWithToppings = false;
+        numRestarts++;
     }
     
     public static void main(String[] args) {
